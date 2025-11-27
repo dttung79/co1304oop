@@ -17,7 +17,7 @@ class BookManager(BaseGUI):
         btn_load = Button(self._window, text="Load Books", command=self.__load_books)
         btn_load.grid(row=0, column=0, padx=10, pady=10, sticky=W)
 
-        self.__lst_books = Listbox(self._window, height=15, width=30)
+        self.__lst_books = Listbox(self._window, height=15, width=30, exportselection=False)
         self.__lst_books.grid(row=1, column=0, padx=10, pady=10, sticky=W, rowspan=4)
         # bind the listbox selection event to a method
         self.__lst_books.bind('<<ListboxSelect>>', self.__show_a_book)
@@ -67,7 +67,7 @@ class BookManager(BaseGUI):
         self.__title_var.set(book.title)
         self.__author_var.set(book.author)
         self.__price_var.set(str(book.price))
-        
+
     def __load_books(self):
         books_file = fd.askopenfilename(title="Select Books CSV File", filetypes=[("CSV files", "*.csv")])
         if not books_file:
@@ -94,16 +94,67 @@ class BookManager(BaseGUI):
             self.__lst_books.insert(END, title) # insert only the title
 
     def __save_books(self):
-        pass
+        # open file dialog to select save location
+        books_file = fd.asksaveasfilename(title="Save Books CSV File", defaultextension=".csv", filetypes=[("CSV files", "*.csv")])
+        if not books_file:
+            messagebox.showwarning("No File Selected", "Select a location to save the CSV file.")
+            return
+        # open csv file to write books
+        writer = csv.writer(open(books_file, 'w', newline=''))
+        # write header row
+        writer.writerow(['ID', 'Title', 'Author', 'Price'])
+        # for each book in the list self.__books, write its details to the csv file
+        for book in self.__books:
+            writer.writerow([book.book_id, book.title, book.author, book.price])
+        messagebox.showinfo("Books Saved", f"Books have been saved successfully to {books_file}")
 
     def __add_book(self):
-        pass
+        # get title
+        title = self.__title_var.get().strip()
+        # get author
+        author = self.__author_var.get().strip()
+        # get price
+        price = int(self.__price_var.get().strip())
+        # create a new Book object id
+        book_id = len(self.__books) + 1
+        # create a new Book object
+        book = Book(book_id, title, author, price)
+        # add the book to the list
+        self.__books.append(book)
+        # add the book title to the listbox
+        self.__lst_books.insert(END, title)
+        # show success message
+        messagebox.showinfo("Book Added", f"The book '{title}' has been added successfully")
+
 
     def __edit_book(self):
-        pass
+        # get the selected index
+        index = self.__lst_books.curselection()[0] 
+        # get the book from the selected index
+        book = self.__books[index]
+        # update book details from entry fields
+        book.title = self.__title_var.get().strip()
+        book.author = self.__author_var.get().strip()
+        book.price = float(self.__price_var.get().strip())
+        # update the listbox
+        self.__lst_books.delete(index)
+        self.__lst_books.insert(index, book.title)
+        # show success message
+        messagebox.showinfo("Book Edited", f"The book '{book.title}' has been updated successfully")
 
     def __delete_book(self):
-        pass
+        # get the selected index
+        index = self.__lst_books.curselection()[0] 
+        # delete the book from the list
+        book = self.__books.pop(index)
+        # delete the book from the listbox
+        self.__lst_books.delete(index)
+        # clear the entry fields
+        self.__title_var.set("")
+        self.__author_var.set("")
+        self.__price_var.set("")
+        # show success message
+        messagebox.showinfo("Book Deleted", f"The book '{book.title}' has been deleted successfully")
 
 if __name__ == "__main__":
     app = BookManager()
