@@ -19,6 +19,8 @@ class BookManager(BaseGUI):
 
         self.__lst_books = Listbox(self._window, height=15, width=30)
         self.__lst_books.grid(row=1, column=0, padx=10, pady=10, sticky=W, rowspan=4)
+        # bind the listbox selection event to a method
+        self.__lst_books.bind('<<ListboxSelect>>', self.__show_a_book)
 
         btn_save = Button(self._window, text="Save Books", command=self.__save_books)
         btn_save.grid(row=5, column=0, padx=10, pady=10, sticky=W)
@@ -56,6 +58,16 @@ class BookManager(BaseGUI):
         btn_exit = Button(self._window, text="Exit", width=20, command=self._window.quit)
         btn_exit.grid(row=5, column=2, padx=10, pady=10, sticky=W, columnspan=3)
 
+    def __show_a_book(self, event):
+        # get the selected index
+        index = self.__lst_books.curselection()[0] 
+        # get the book
+        book = self.__books[index]
+        # display book details in the entry fields
+        self.__title_var.set(book.title)
+        self.__author_var.set(book.author)
+        self.__price_var.set(str(book.price))
+        
     def __load_books(self):
         books_file = fd.askopenfilename(title="Select Books CSV File", filetypes=[("CSV files", "*.csv")])
         if not books_file:
